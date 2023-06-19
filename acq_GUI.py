@@ -104,6 +104,8 @@ class menu():
         self.online_monitor.set(False)
         self.online_monitor_data = BooleanVar(self.master_window)
         self.online_monitor_data.set(False)
+        self.pause_on_restart = BooleanVar(self.master_window)
+        self.pause_on_restart.set(True)
 
         self.save_conf_every_run = BooleanVar(self.master_window)
         self.x1000 = BooleanVar(self.master_window)
@@ -150,23 +152,23 @@ class menu():
 
         self.start_frame = Frame(self.master)
         self.start_frame.pack()
-        Label(self.start_frame, text="MAX acq time (seconds for TL, minutes for TM)").grid(row=0, column=0, sticky=NW, pady=4)
+        Label(self.start_frame, text="MAX acq time (seconds for TL, minutes for TM)").grid(row=0, column=0, sticky=NE, pady=4)
         self.time_in = Entry(self.start_frame, width=3)
         self.time_in.insert(END, '30')
         self.time_in.grid(row=0, column=1, sticky=NW, pady=4)
-        Label(self.start_frame, text="Events run ").grid(row=0, column=2, sticky=NW, pady=4)
+        Label(self.start_frame, text="Events run ").grid(row=0, column=2, sticky=NE, pady=4)
         self.event_max = Entry(self.start_frame, width=5)
         self.event_max.insert(END, '500')
         self.event_max.grid(row=0, column=3, sticky=NW, pady=4)
-        Label(self.start_frame, text="Events subrun ").grid(row=0, column=4, sticky=NW, pady=4)
+        Label(self.start_frame, text="Events subrun ").grid(row=0, column=4, sticky=NE, pady=4)
         self.event_max_sub = Entry(self.start_frame, width=5)
         self.event_max_sub.insert(END, '50')
         self.event_max_sub.grid(row=0, column=5, sticky=NW, pady=4)
         Checkbutton(self.start_frame, text="X1000", variable=self.x1000).grid(row=0, column=7, sticky=NW, pady=4)
-        Checkbutton(self.start_frame, text="Fast analysis", variable=self.simple_analysis).grid(row=0, column=8, sticky=NW, pady=4)
-        Checkbutton(self.start_frame, text="On run analysis", variable=self.run_analysis).grid(row=0, column=9, sticky=NW, pady=4)
-        Checkbutton(self.start_frame, text="Restart", variable=self.restart).grid(row=0, column=10, sticky=NW, pady=4)
-        Checkbutton(self.start_frame, text="configure every restart", variable=self.configure_every_restart).grid(row=0, column=11, sticky=NW, pady=4)
+        Checkbutton(self.start_frame, text="Fast analysis", variable=self.simple_analysis).grid(row=1, column=1, sticky=NW, pady=4)
+        Checkbutton(self.start_frame, text="On run analysis", variable=self.run_analysis).grid(row=1, column=2, sticky=NW, pady=4)
+        Checkbutton(self.start_frame, text="Restart", variable=self.restart).grid(row=2, column=1, sticky=NW, pady=4)
+        Checkbutton(self.start_frame, text="configure every restart", variable=self.configure_every_restart).grid(row=2, column=4, sticky=NW, pady=4)
         # Checkbutton(self.start_frame, text="Save conf. at every subrun", variable=self.save_conf_every_run).grid(row=0, column=6, sticky=NW, pady=4)
         # Checkbutton(self.start_frame, text="Save GEMROC global errors at the end", variable=self.error_GEMROC).grid(row=0, column=7, sticky=NW, pady=4)
 
@@ -249,8 +251,14 @@ class menu():
             self.open_on_run_tab()
             self.online_monitor.set(True)
             self.online_monitor_data.set(True)
-            Checkbutton(self.start_frame, text="Online monitor", variable=self.online_monitor).grid(row=0, column=12, sticky=NW, pady=4)
-            Checkbutton(self.start_frame, text="Online data monitor", variable=self.online_monitor_data).grid(row=0, column=13, sticky=NW, pady=4)
+            Checkbutton(self.start_frame, text="Online monitor", variable=self.online_monitor).grid(row=1, column=3, sticky=NW, pady=4)
+            Checkbutton(self.start_frame, text="Online data monitor", variable=self.online_monitor_data).grid(row=1, column=4, sticky=NW, pady=4)
+        self.pause_on_restart.set(True)
+        Checkbutton(self.start_frame, text="Pause on restart", variable=self.pause_on_restart).grid(row=2, column=5, sticky=NW, pady=4)
+        Label(self.start_frame, text="config sending on restart").grid(row=2, column=2, sticky=NE, pady=4)
+        self.num_config_writings = Entry(self.start_frame, width=1)
+        self.num_config_writings.insert(END, '3')
+        self.num_config_writings.grid(row=2, column=3, sticky=NW, pady=4)
 
         # TO be restored
         # Checkbutton(self.start_frame, text="Data online monitor", variable=self.online_monitor_data).grid(row=0, column=3, sticky=NW, pady=4)
@@ -706,9 +714,8 @@ class menu():
 
                 if self.configure_every_restart.get():
                     self.father.Synch_reset()
-                    self.father.load_default_config_parallel(set_check=False)
-                    self.father.load_default_config_parallel(set_check=False) # DS
-                    self.father.load_default_config_parallel(set_check=False) # DS
+                    for i in range(int(self.num_config_writings.get())):
+                      self.father.load_default_config_parallel(set_check=False)
                     self.father.doing_something=False
                     print("Configuration wrote")
                     time.sleep(2)
@@ -716,7 +723,8 @@ class menu():
                     # self.father.TCAM_reset()
                     if debug:
                         print("Setting pause")
-                    # self.father.set_pause_mode(to_all=True, value=1) # DS
+                    if self.pause_on_restart.get():
+                        self.father.set_pause_mode(to_all=True, value=1) # DS
 
                 if self.PMT and self.lower_PMT.get():
                     if debug:
