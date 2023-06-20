@@ -724,7 +724,7 @@ class menu():
                     if debug:
                         print("Setting pause")
                     if self.pause_on_restart.get():
-                        self.father.set_pause_mode(to_all=True, value=1) # DS
+                        self.father.set_pause_mode(to_all=True, value=1)
 
                 if self.PMT and self.lower_PMT.get():
                     if debug:
