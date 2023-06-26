@@ -715,15 +715,15 @@ class menu():
                 if self.configure_every_restart.get():
                     self.father.Synch_reset()
                     for i in range(int(self.num_config_writings.get())):
-                      self.father.load_default_config_parallel(set_check=False)
+                        self.father.load_default_config_parallel(set_check=False)
                     self.father.doing_something=False
                     print("Configuration wrote")
                     time.sleep(2)
                     self.father.Synch_reset()
                     # self.father.TCAM_reset()
-                    if debug:
-                        print("Setting pause")
                     if self.pause_on_restart.get():
+                        if debug:
+                            print("Setting pause")
                         self.father.set_pause_mode(to_all=True, value=1)
 
                 if self.PMT and self.lower_PMT.get():
