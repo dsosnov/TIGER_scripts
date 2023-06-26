@@ -106,6 +106,8 @@ class menu():
         self.online_monitor_data.set(False)
         self.pause_on_restart = BooleanVar(self.master_window)
         self.pause_on_restart.set(True)
+        self.log_IVT_on_restart = BooleanVar(self.master_window)
+        self.log_IVT_on_restart.set(True)
 
         self.save_conf_every_run = BooleanVar(self.master_window)
         self.x1000 = BooleanVar(self.master_window)
@@ -255,6 +257,8 @@ class menu():
             Checkbutton(self.start_frame, text="Online data monitor", variable=self.online_monitor_data).grid(row=1, column=4, sticky=NW, pady=4)
         self.pause_on_restart.set(True)
         Checkbutton(self.start_frame, text="Pause on restart", variable=self.pause_on_restart).grid(row=2, column=5, sticky=NW, pady=4)
+        self.log_IVT_on_restart.set(True)
+        Checkbutton(self.start_frame, text="Log IVT before configuration", variable=self.log_IVT_on_restart).grid(row=2, column=6, sticky=NW, pady=4)
         Label(self.start_frame, text="config sending on restart").grid(row=2, column=2, sticky=NE, pady=4)
         self.num_config_writings = Entry(self.start_frame, width=1)
         self.num_config_writings.insert(END, '3')
@@ -714,6 +718,10 @@ class menu():
 
                 if self.configure_every_restart.get():
                     self.father.Synch_reset()
+                    # Logging temperature, voltage and current to database
+                    if self.log_IVT_on_restart.get():
+                        self.father.log_IVT()
+                        time.sleep(5)
                     for i in range(int(self.num_config_writings.get())):
                         self.father.load_default_config_parallel(set_check=False)
                     self.father.doing_something=False
