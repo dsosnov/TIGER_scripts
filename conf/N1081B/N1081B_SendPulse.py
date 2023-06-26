@@ -16,7 +16,7 @@ config.read(config_file)
 
 section_text = config["GLOBAL"].get("section", fallback='')
 sections_applicable = [s for s in N1081B.Section if str(s) == 'Section.SEC_'+section_text]
-section = sections_applicable[0] if len(sections_applicable) else N1081B.Section. SEC_D
+section = sections_applicable[0] if len(sections_applicable) else N1081B.Section.SEC_D
 
 pp = pprint.PrettyPrinter(indent=4)
 
