@@ -257,7 +257,7 @@ class menu():
         Checkbutton(self.start_frame, text="Pause on restart", variable=self.pause_on_restart).grid(row=2, column=5, sticky=NW, pady=4)
         Label(self.start_frame, text="config sending on restart").grid(row=2, column=2, sticky=NE, pady=4)
         self.num_config_writings = Entry(self.start_frame, width=1)
-        self.num_config_writings.insert(END, '3')
+        self.num_config_writings.insert(END, '1')
         self.num_config_writings.grid(row=2, column=3, sticky=NW, pady=4)
 
         # TO be restored
