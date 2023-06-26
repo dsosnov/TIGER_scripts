@@ -2,6 +2,7 @@
 
 # Based on official Nuclear Instruments N1081B SDK: https://github.com/NuclearInstruments/N1081B-SDK-Python.git
 
+import os
 import pprint
 import time
 from N1081B_sdk import N1081B
@@ -10,18 +11,17 @@ DEBUG = False
 
 import configparser
 config=configparser.ConfigParser()
-config.read("N1081B.ini")
+config_file = os.path.realpath(__file__).replace(os.path.basename(__file__),'N1081B.ini')
+config.read(config_file)
 
-ipaddr = config["GLOBAL"].get("ip", fallback='')
 section_text = config["GLOBAL"].get("section", fallback='')
-print([s for s in N1081B.Section])
 sections_applicable = [s for s in N1081B.Section if str(s) == 'Section.SEC_'+section_text]
-print(sections_applicable)
 section = sections_applicable[0] if len(sections_applicable) else N1081B.Section. SEC_D
 
 pp = pprint.PrettyPrinter(indent=4)
 
 # create N1081B board object
+ipaddr = config["GLOBAL"].get("ip", fallback='')
 N1081B_device = N1081B(ipaddr)
 # connect to the board
 N1081B_device.connect()
