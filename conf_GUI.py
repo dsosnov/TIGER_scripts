@@ -24,6 +24,8 @@ from matplotlib.figure import Figure
 import os
 import requests
 import threading
+import psycopg2 # for connection to postgress db
+import datetime
 
 OS = sys.platform
 if OS == 'win32':
@@ -72,6 +74,9 @@ if grafana:
     except requests.exceptions.ConnectionError:
         print ("Connection error, disabling Grafana")
     grafana=False
+
+config_sensors=configparser.ConfigParser()
+config_sensors.read("conf"+sep+"sensors.ini")
 
 def cmp_to_key(mycmp):
     'Convert a cmp= function into a key= function'
@@ -384,6 +389,7 @@ class menu():
         self.status_tab = Frame (self.select_window)
         self.tabControl.add(self.status_tab, text = "Version & status")
         Button(self.status_tab, text="Acquire version and FEB IVT status", command = self.acquire_IVT_version).pack(anchor = NW)
+        Button(self.status_tab, text="Log FEB Temperature status", command = self.log_IVT).pack(anchor = NW)
         self.statu_tab_rows = Frame (self.status_tab)
         self.statu_tab_rows.pack(anchor = NW, fill =BOTH)
         self.version_dict = {}
@@ -580,7 +586,7 @@ class menu():
                     Label(a, text="GEMROC OVT_FLAG = {}".format(this_ROC_IVT['limits']["ROC"]["OVT_FLAG"]),font=("TkDefaultFont",10)).pack()
             Label(a, text="___________________________________________________________________________________________________________________________").pack(side=BOTTOM)
 
-    def acquire_IVT_version(self):
+    def acquire_IVT_version(self, do_generate_rows = True):
         """
         Acquire IVT and version from the GEMROC and store them in the dictionary created above
         :return:
@@ -596,8 +602,62 @@ class menu():
         for number, GEMROC in sorted(self.GEMROC_reading_dict.items()):
             self.version_dict[number] = GEMROC.GEM_COM.read_version(GEMROC.GEM_COM.Read_GEMROC_LV_CfgReg())
             self.IVT_dict[number] = GEMROC.GEM_COM.save_IVT()
-        self.generate_rows()
+        if do_generate_rows:
+            self.generate_rows()
         self.doing_something=False
+
+    def log_IVT(self):
+        if 'database' not in config_sensors.keys():
+            return
+        if config_sensors['database'].get('type') != 'postgress':
+            return
+        conn = None
+        try:
+            conn = psycopg2.connect(
+                database=config_sensors['database'].get('database'),
+                user=config_sensors['database'].get('user'),
+                password=config_sensors['database'].get('password'),
+                host=config_sensors['database'].get('host'),
+                port=config_sensors['database'].get('port')
+                )
+            dt = datetime.datetime.now(datetime.timezone.utc)
+
+            # Get and convert data
+            self.acquire_IVT_version(False)
+            # print(self.IVT_dict)
+            value_list = []
+            SENSOR_TYPES = {'TEMP[degC]':1, 'VD[mV]':2, 'ID[mA]':3, 'VA[mV]':4, 'IA[mA]':5}
+            for gr, gr_info in self.IVT_dict.items():
+                gr_num = int(gr[6:])
+                print(gr)
+                for k, feb_info in gr_info['status'].items():
+                    print(k, feb_info)
+                    feb_num = int(k[3:]) if k.startswith('FEB') else 4
+                    sensor_type = None
+                    for sensor_name, value in feb_info.items():
+                        if sensor_name in SENSOR_TYPES.keys():
+                            sensor_type = SENSOR_TYPES[sensor_name]
+                        else:
+                            relative_sensors = [s for s in SENSOR_TYPES.keys() if s.split('[')[0] == sensor_name]
+                            if relative_sensors:
+                              sensor_type = SENSOR_TYPES[relative_sensors[0]]
+                        if not sensor_type:
+                          continue
+                        full_sensor_num = sensor_type*100 + gr_num * 10 + feb_num
+                        value_list.append((dt, full_sensor_num, value, None))
+            # print(value_list)
+
+            cursor = conn.cursor()
+            # cursor.execute_batch('INSERT INTO sensors_measurements (ts, sensor_id, value, value_err) VALUES (%s, %s, %s, %s)', tuple(value_list))
+            # conn.commit()
+        except (Exception, psycopg2.Error) as error:
+            print("Error while fetching data from PostgreSQL", error)
+        finally:
+            # closing database connection.
+            if conn:
+                cursor.close()
+                conn.close()
+                # print("PostgreSQL connection is closed")
 
     def myfunction(self, event):
         """
