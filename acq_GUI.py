@@ -59,6 +59,7 @@ class menu():
         self.errors_counters_810 = {}
         self.logfile = "." + sep + "log_folder" + sep + "ACQ_log_{}".format(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
         self.conffile = "." + sep + "log_folder" + sep + "CONF_log_{}".format(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+        self.before_run_script = config["GLOBAL"].get("exec_before_run", fallback='')
         if self.DB:
             try:
                 self.db_sender = DB_classes.Database_Manager()
@@ -881,6 +882,12 @@ class menu():
             pass
 
     def start_acq(self, First_launch=True):
+        if self.before_run_script:
+            try:
+                subprocess.call("conf"+sep+self.before_run_script)
+            except Exception as exct:
+                print(type(exct), ':', exct)
+
         if not self.std_alone:
             if self.mini_acq.get():
                 if First_launch:
