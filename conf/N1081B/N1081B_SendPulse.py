@@ -17,11 +17,20 @@ config.read(config_file)
 section_text = config["GLOBAL"].get("section", fallback='')
 sections_applicable = [s for s in N1081B.Section if str(s) == 'Section.SEC_'+section_text]
 section = sections_applicable[0] if len(sections_applicable) else N1081B.Section.SEC_D
+section_scaler_text = config["GLOBAL"].get("section_scaler", fallback='')
+sections_scaler_applicable = [s for s in N1081B.Section if str(s) == 'Section.SEC_'+section_scaler_text]
+section_scaler = sections_applicable[0] if len(sections_scaler_applicable) else N1081B.Section.SEC_C
+scaler_work_enabled = section_scaler_text != ''
+if scaler_work_enabled:
+  print('"Mute scaler" option is enabled')
 
 pp = pprint.PrettyPrinter(indent=4)
 
 # create N1081B board object
 ipaddr = config["GLOBAL"].get("ip", fallback='')
+if not ipaddr:
+  print('No ip address!!!')
+  exit(0)
 N1081B_device = N1081B(ipaddr)
 # connect to the board
 N1081B_device.connect()
@@ -35,6 +44,12 @@ zynq_version = version_json["data"]["zynq_version"]
 fpga_version = version_json["data"]["fpga_version"]
 
 time.sleep(0.5) # 0.5 or 1.0
+
+if scaler_work_enabled:
+  # Disable scaler input
+  resp = N1081B_device.configure_scaler(section_scaler, 500, False, True, True, True, False)
+  if DEBUG:
+    pp.pprint(resp)
 
 # # set input of section D in NIM standard
 # N1081B_device.set_input_configuration(section,
@@ -68,6 +83,12 @@ if DEBUG:
 resp = N1081B_device.configure_rate_meter(section, True, True, True, True, False)
 if DEBUG:
   pp.pprint(resp)
+
+if scaler_work_enabled:
+  # Enable scaler input back
+  resp = N1081B_device.configure_scaler(section_scaler, 500, True, True, True, True, False)
+  if DEBUG:
+    pp.pprint(resp)
 
 # print current values rate meter values
 counter_json = N1081B_device.get_function_results(section)
