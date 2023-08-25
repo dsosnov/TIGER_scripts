@@ -100,7 +100,7 @@ class noise_rate_measure():
         self.plot_frame_total.grid(row=2, column=2, sticky=S, pady=4, columnspan=20)
         self.fig_total = Figure(figsize=(10, 8))
         self.axe_total = self.fig_total.add_subplot(111)
-        self.heatmap_total, self.cbar_total = heatmap(self.count_matrix_TIGER, ["GEMROC {}".format(gem_num) for gem_num in range(0, 20)], ["TIGER {}".format(tig_num) for tig_num in range(0, 8)], ax=self.axe_total, cmap="winter", cbarlabel="Rate [hit/s]")
+        self.heatmap_total, self.cbar_total = heatmap(self.count_matrix_TIGER, self.GEMROC_reading_dict.keys(), ["TIGER {}".format(tig_num) for tig_num in range(0, 8)], ax=self.axe_total, cmap="winter", cbarlabel="Rate [hit/s]")
         self.canvas_total = FigureCanvasTkAgg(self.fig_total, master=self.plot_frame_total)
         self.canvas_total.get_tk_widget().pack(side=BOTTOM)
         self.canvas_total.draw()
@@ -129,7 +129,7 @@ class noise_rate_measure():
         # print sv.get()
         # if sv.get()=="All":
         #     self.heatmap.remove()
-        #     self.heatmap, = heatmap(self.count_matrix_TIGER, ["GEMROC {}".format(gem_num) for gem_num in range(0, 20)], ["TIGER {}".format(tig_num) for tig_num in range(0, 11)], ax=self.axe, cmap="YlGn", cbarlabel="Rate [hits/s]")
+        #     self.heatmap, = heatmap(self.count_matrix_TIGER, self.GEMROC_reading_dict.keys(), ["TIGER {}".format(tig_num) for tig_num in range(0, 11)], ax=self.axe, cmap="YlGn", cbarlabel="Rate [hits/s]")
         # else:
         #     gem_num=int(sv.get().split(" ")[1])
         #     self.cbar.remov()
@@ -140,7 +140,7 @@ class noise_rate_measure():
 
             self.axe_total.set_xticks(np.arange(self.count_matrix_TIGER.shape[1]))
             self.axe_total.set_yticks(np.arange(self.count_matrix_TIGER.shape[0]))
-            self.axe_total.set_xticklabels(["GEMROC {}".format(gem_num) for gem_num in range(0, 20)])
+            self.axe_total.set_xticklabels(self.GEMROC_reading_dict.keys())
             self.axe_total.set_yticklabels(["TIGER {}".format(tig_num) for tig_num in range(0, 11)])
         else:
             gem_num = int(sv.get().split(" ")[1])
