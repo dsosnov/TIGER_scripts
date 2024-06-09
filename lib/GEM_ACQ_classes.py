@@ -260,7 +260,7 @@ class reader:
         while time.time()-self.beginning_time<max_time:
             data_pack, addr = self.dataSock.recvfrom(self.BUFSIZE)
             data_pack = bytearray(data_pack)
-            for slices in range(0,len(data_pack)/8):
+            for slices in range(0,len(data_pack)//8):
                 data=data_pack[slices*8:slices*8+8]
                 # print "LEN {}".format(len(data))
                 reversed_data = (list(reversed(data)))  # Swaps the byte order
