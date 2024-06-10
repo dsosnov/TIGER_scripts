@@ -100,7 +100,9 @@ class noise_rate_measure():
         self.plot_frame_total.grid(row=2, column=2, sticky=S, pady=4, columnspan=20)
         self.fig_total = Figure(figsize=(10, 8))
         self.axe_total = self.fig_total.add_subplot(111)
-        self.heatmap_total, self.cbar_total = heatmap(self.count_matrix_TIGER, self.GEMROC_reading_dict.keys(), ["TIGER {}".format(tig_num) for tig_num in range(0, 8)], ax=self.axe_total, cmap="winter", cbarlabel="Rate [hit/s]")
+        count_matrix_current = np.array([self.count_matrix_TIGER[int(k[6:])] for k in self.GEMROC_reading_dict.keys()]) # Workaround
+        # self.heatmap_total, self.cbar_total = heatmap(self.count_matrix_TIGER, self.GEMROC_reading_dict.keys(), ["TIGER {}".format(tig_num) for tig_num in range(0, 8)], ax=self.axe_total, cmap="winter", cbarlabel="Rate [hit/s]")
+        self.heatmap_total, self.cbar_total = heatmap(count_matrix_current, self.GEMROC_reading_dict.keys(), ["TIGER {}".format(tig_num) for tig_num in range(0, 8)], ax=self.axe_total, cmap="winter", cbarlabel="Rate [hit/s]")
         self.canvas_total = FigureCanvasTkAgg(self.fig_total, master=self.plot_frame_total)
         self.canvas_total.get_tk_widget().pack(side=BOTTOM)
         self.canvas_total.draw()
