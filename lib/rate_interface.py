@@ -13,6 +13,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from lib import GEM_ANALYSIS_classes as AN_CLASS
 from lib import DB_classes as DB_classes
+import sys
 
 OS = sys.platform
 if OS == 'win32':
